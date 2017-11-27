@@ -7,7 +7,7 @@
 //
 
 import UIKit
-
+import CoreMotion
 class ViewController: UIViewController {
 
     override func viewDidLoad() {
