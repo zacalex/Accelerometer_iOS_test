@@ -9,7 +9,8 @@
 import UIKit
 import CoreMotion
 import Alamofire
-class ViewController: UIViewController {
+import CoreLocation
+class ViewController: UIViewController, CLLocationManagerDelegate {
     var motionManager = CMMotionManager()
     let Hz = 50.0
     var sum = 0
@@ -19,25 +20,36 @@ class ViewController: UIViewController {
     var count = 0.0
     var tempSum = 0.0
     var basicUrl = "http://10.120.66.203:8888/TEST.php"
-    
-
+    let locationManager = CLLocationManager()
+    var startLocation: CLLocation!
+    //上一次的坐标
+    var lastLocation: CLLocation!
+    //总共移动的距离（实际距离）
     @IBOutlet weak var somex: UILabel!
+    var traveledDistance: Double = 0
 
-
+    @IBOutlet weak var label2: UILabel!
     override func viewDidLoad() {
         super.viewDidLoad()
         
         fileURL = DocumentDirUrl.appendingPathComponent(fileName).appendingPathExtension("txt")
         print("file path : \(fileURL.path)")
-        let writeString = "ritd replacement\n"
-        do{
-            try writeString.write(to:fileURL,atomically: true,encoding: String.Encoding.utf8)
-        } catch let error as NSError {
-            print("fail to write to url")
-            print(error)
+        let fileManager = FileManager.default
+        if fileManager.fileExists(atPath: fileURL.path){
+            print("File exist")
+        } else {
+            print("File not exist")
+            let writeString = "ritd replacement\n"
+            do{
+                try writeString.write(to:fileURL,atomically: true,encoding: String.Encoding.utf8)
+            } catch let error as NSError {
+                print("fail to write to url")
+                print(error)
+            }
+            self.uploadFile(filePath: self.fileURL, uploadURL: self.basicUrl)
         }
-        self.uploadFile(filePath: self.fileURL, uploadURL: self.basicUrl)
         setAcce()
+        startLocationUpdate()
         
     }
 
@@ -90,9 +102,9 @@ class ViewController: UIViewController {
                     self.count = 0;
                     self.appendfile(svm: svm,time: self.stringifyAll(calendar: Date()))
                     svm = 0.0;
-                    print(self.readfile())
+//                    print(self.readfile())
                     self.uploadFile(filePath: self.fileURL, uploadURL: self.basicUrl)
-                    self.somex.text = self.readfile()
+                    
 //                    print(self.readfile())
                     self.view.reloadInputViews()
                 }
@@ -124,12 +136,64 @@ class ViewController: UIViewController {
                 }
                 //上传进度
                 upload.uploadProgress(queue: DispatchQueue.global(qos: .utility)) { progress in
+                    DispatchQueue.main.async{
+                        self.somex.text =  self.stringifyAll(calendar: Date())
+                    }
+                    
                     print("file upload progress: \(progress.fractionCompleted)")
                 }
             case .failure(let encodingError):
                 print(encodingError)
             }
         })
+    }
+    func getAuthorizationSuatus(status: CLAuthorizationStatus)-> String{
+        switch status {
+            case .authorizedAlways:
+                return "Always"
+            case .authorizedWhenInUse :
+                return "When in use"
+            case .denied :
+                return "Denied"
+            case .notDetermined :
+                return "Not determined"
+            case .restricted :
+                return "Restriceted"
+        
+        }
+    }
+    
+    
+    func startLocationUpdate() {
+        print("here to init location update")
+//        if CLLocationManager.locationServicesEnabled() {
+            locationManager.delegate = self
+            locationManager.desiredAccuracy = kCLLocationAccuracyBestForNavigation
+            locationManager.requestWhenInUseAuthorization()
+            
+            locationManager.startMonitoringSignificantLocationChanges()
+            locationManager.distanceFilter = 2
+            locationManager.allowsBackgroundLocationUpdates = true
+            locationManager.startUpdatingLocation()
+//        }
+    }
+    func locationManager(_ manager: CLLocationManager,
+                         didUpdateLocations locations: [CLLocation]) {
+        if startLocation == nil {
+            startLocation = locations.first
+        } else if let location = locations.last {
+            //获取各个数据
+            traveledDistance += lastLocation.distance(from: location)
+            let lineDistance = startLocation.distance(from: locations.last!)
+            var text = "--- GPS统计数据 ---\n"
+            text += "实时距离: \(traveledDistance)\n"
+            text += "直线距离: \(lineDistance)\n"
+            print(text)
+            label2.text = text
+            
+        }
+        lastLocation = locations.last
+        
     }
 }
 
