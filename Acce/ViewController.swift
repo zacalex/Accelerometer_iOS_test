@@ -10,25 +10,37 @@ import UIKit
 import CoreMotion
 import Alamofire
 import CoreLocation
-class ViewController: UIViewController, CLLocationManagerDelegate {
+import MessageUI
+
+class ViewController: UIViewController, CLLocationManagerDelegate, MFMailComposeViewControllerDelegate {
     var motionManager = CMMotionManager()
     let Hz = 50.0
     var sum = 0
-    var fileName = "rtid_replacement_acce_data"
+    var fileName = "acce_data"
     let DocumentDirUrl = try! FileManager.default.url(for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: true)
     var fileURL : URL! = nil
     var count = 0.0
     var tempSum = 0.0
-    var basicUrl = "http://10.120.66.203:8888/TEST.php"
+    var basicUrl = "http://10.120.64.78:8888/TEST.php"
     let locationManager = CLLocationManager()
     var startLocation: CLLocation!
     //上一次的坐标
     var lastLocation: CLLocation!
     //总共移动的距离（实际距离）
-    @IBOutlet weak var somex: UILabel!
-    var traveledDistance: Double = 0
+    
+    let calendar = Calendar.current
+    var buffer = ""
+    var uploaded = false
+    var appended = false
 
     @IBOutlet weak var label2: UILabel!
+    
+    @IBOutlet weak var startAcc: UIButton!
+    @IBOutlet weak var stopAcc: UIButton!
+    @IBOutlet weak var emailData: UIButton!
+    @IBOutlet weak var resetfile: UIButton!
+    
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -39,20 +51,75 @@ class ViewController: UIViewController, CLLocationManagerDelegate {
             print("File exist")
         } else {
             print("File not exist")
-            let writeString = "ritd replacement\n"
+            let writeString = ""
             do{
                 try writeString.write(to:fileURL,atomically: true,encoding: String.Encoding.utf8)
             } catch let error as NSError {
                 print("fail to write to url")
                 print(error)
             }
-            self.uploadFile(filePath: self.fileURL, uploadURL: self.basicUrl)
+            
         }
-        setAcce()
-        startLocationUpdate()
+        stopAcc.isEnabled = false
+        
         
     }
 
+    @IBAction func resetLocalfile(_ sender: Any) {
+        print("reset local file", "file path : \(fileURL.path)")
+//        let fileManager = FileManager.default
+        let writeString = ""
+        do{
+            try writeString.write(to:fileURL,atomically: true,encoding: String.Encoding.utf8)
+        } catch let error as NSError {
+            print("fail to write to url")
+            print(error)
+        }
+        
+    }
+    @IBAction func sendEmail(_ sender: Any) {
+        if(MFMailComposeViewController.canSendMail()){
+            print("send mail", "can send")
+            let mailComposer = MFMailComposeViewController()
+            mailComposer.mailComposeDelegate = self
+            
+            // set subject and message of the email
+            mailComposer.setSubject("acce data send at " + DateUtil.stringifyAll(calendar: Date()))
+            mailComposer.setMessageBody("acc data is at attachment", isHTML: false)
+            
+            if let fileData = NSData(contentsOf:self.fileURL) {
+                print("send mail","file loaded")
+                mailComposer.addAttachmentData(fileData as Data, mimeType: "text/plain", fileName: "Acce_data.txt")
+            }
+            
+            self.present(mailComposer, animated: true, completion: nil)
+            
+        } else {
+            print("send mail", "cannot send")
+        }
+        
+    }
+    
+    func mailComposeController(_ controller: MFMailComposeViewController, didFinishWith result: MFMailComposeResult, error: Error?) {
+        self.dismiss(animated: true, completion: nil)
+    }
+    
+    @IBAction func startAcc(_ sender: Any) {
+        setAcce()
+        setupCoreLocation()
+        stopAcc.isEnabled = true
+        startAcc.isEnabled = false
+        emailData.isEnabled = false
+        resetfile.isEnabled = false
+    }
+    @IBAction func Stopacc(_ sender: Any) {
+        
+        motionManager.stopAccelerometerUpdates()
+        startAcc.isEnabled = true
+        emailData.isEnabled = true
+        resetfile.isEnabled = true
+        stopAcc.isEnabled = false
+    }
     override func viewDidAppear(_ animated: Bool) {
         
 
@@ -85,68 +152,9 @@ class ViewController: UIViewController, CLLocationManagerDelegate {
             print("Error writing to file \(error)")
         }
     }
-    func setAcce() {
-        motionManager.accelerometerUpdateInterval = 1.0/Hz
-        motionManager.startAccelerometerUpdates(to : OperationQueue.current!){
-            (data, error) in
-            if let myData = data {
-//                print(myData)
-                var svm = myData.acceleration.x * myData.acceleration.x +
-                    myData.acceleration.y * myData.acceleration.y +
-                    myData.acceleration.z * myData.acceleration.z
-                
-                svm = sqrt(svm) - 1
-                self.tempSum = self.tempSum + svm
-                self.count = self.count + 1.0
-                if(self.count > self.Hz){
-                    self.count = 0;
-                    self.appendfile(svm: svm,time: self.stringifyAll(calendar: Date()))
-                    svm = 0.0;
-//                    print(self.readfile())
-                    self.uploadFile(filePath: self.fileURL, uploadURL: self.basicUrl)
-                    
-//                    print(self.readfile())
-                    self.view.reloadInputViews()
-                }
-                
-            }
-        }
-    }
-    func stringifyAll(calendar : Date) -> String{
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "yyyy-MM-dd-HH:mm:ss"
-        return dateFormatter.string(from: calendar)
-    }
+
+
     
-    func uploadFile(filePath : URL, uploadURL: String){
-//        print("here to upload")
-        Alamofire.upload(
-            //同样采用post表单上传
-            multipartFormData: { multipartFormData in
-                multipartFormData.append(filePath, withName: "uploadedfile", fileName: self.fileName, mimeType: "text/plain")
-                //服务器地址
-        },to: uploadURL,encodingCompletion: { encodingResult in
-            switch encodingResult {
-            case .success(let upload, _, _):
-                //json处理
-                upload.responseJSON { response in
-                    //解包
-                    guard let result = response.result.value else { return }
-                    print("json:\(result)")
-                }
-                //上传进度
-                upload.uploadProgress(queue: DispatchQueue.global(qos: .utility)) { progress in
-                    DispatchQueue.main.async{
-                        self.somex.text =  self.stringifyAll(calendar: Date())
-                    }
-                    
-                    print("file upload progress: \(progress.fractionCompleted)")
-                }
-            case .failure(let encodingError):
-                print(encodingError)
-            }
-        })
-    }
     func getAuthorizationSuatus(status: CLAuthorizationStatus)-> String{
         switch status {
             case .authorizedAlways:
@@ -164,37 +172,128 @@ class ViewController: UIViewController, CLLocationManagerDelegate {
     }
     
     
-    func startLocationUpdate() {
-        print("here to init location update")
-//        if CLLocationManager.locationServicesEnabled() {
-            locationManager.delegate = self
-            locationManager.desiredAccuracy = kCLLocationAccuracyBestForNavigation
-            locationManager.requestWhenInUseAuthorization()
+
+    
+    func setAcce() {
+        motionManager.accelerometerUpdateInterval = 1.0/Hz
+        motionManager.startAccelerometerUpdates(to : OperationQueue.current!){
+            (data, error) in
+            if let myData = data {
+                //                print(myData)
+                var svm = myData.acceleration.x * myData.acceleration.x +
+                    myData.acceleration.y * myData.acceleration.y +
+                    myData.acceleration.z * myData.acceleration.z
+                
+                svm = sqrt(svm) - 1
+                self.tempSum = self.tempSum + svm
+                self.count = self.count + 1.0
+                if(self.count > self.Hz){
+                    print("acc", " appended \(svm) at " + DateUtil.stringifyAllAlt(calendar: Date()))
+                    self.count = 0;
+                    
+                    self.label2.text = DateUtil.stringifyAllAlt(calendar: Date()) + " \(svm)"
+                    self.appendfile(dataString: DateUtil.stringifyAllAlt(calendar: Date()) + " \(svm)" + "\n")
+                    svm = 0.0;
+                    
+                }
+            }
+        }
+    }
+    
+    func appendfile(dataString : String){
+        
+        do{
+            let fileHandle = try FileHandle(forWritingTo: self.fileURL)
+            fileHandle.seekToEndOfFile()
+            fileHandle.write(dataString.data(using: .utf8)!)
+            fileHandle.closeFile()
+            
+        } catch {
+            print("Error writing to file \(error)")
+        }
+    }
+    func setFile(){
+        fileURL = DocumentDirUrl.appendingPathComponent(fileName).appendingPathExtension("txt")
+        print("file path : \(fileURL.path)")
+        let fileManager = FileManager.default
+        if fileManager.fileExists(atPath: fileURL.path){
+            print("File exist")
+        } else {
+            print("File not exist")
+            let writeString = ""
+            do{
+                try writeString.write(to:fileURL,atomically: true,encoding: String.Encoding.utf8)
+            } catch let error as NSError {
+                print("fail to write to url")
+                print(error)
+            }
+            
+        }
+    }
+    
+    //location service
+    var locationFileURL : URL!
+    let locationFileName = "locationFileName"
+    var locationUploadFlag = false;
+    func setupCoreLocation()  {
+        print("setupCoreLocation")
+        switch CLLocationManager.authorizationStatus() {
+        case .notDetermined:
+            print("in setup ","not determined")
+            locationManager.requestAlwaysAuthorization()
+            break
+        case .authorizedAlways:
+            print("in setup ","authorized")
+            enableLocationServices()
+        default:
+            break
+        }
+    }
+    func enableLocationServices()  {
+        if CLLocationManager.locationServicesEnabled(){
+            
+            locationManager.desiredAccuracy = kCLLocationAccuracyHundredMeters
+            //            locationManager.requestWhenInUseAuthorization()
             
             locationManager.startMonitoringSignificantLocationChanges()
             locationManager.distanceFilter = 2
             locationManager.allowsBackgroundLocationUpdates = true
+            locationManager.pausesLocationUpdatesAutomatically = false
             locationManager.startUpdatingLocation()
-//        }
-    }
-    func locationManager(_ manager: CLLocationManager,
-                         didUpdateLocations locations: [CLLocation]) {
-        if startLocation == nil {
-            startLocation = locations.first
-        } else if let location = locations.last {
-            //获取各个数据
-            traveledDistance += lastLocation.distance(from: location)
-            let lineDistance = startLocation.distance(from: locations.last!)
-            var text = "--- GPS统计数据 ---\n"
-            text += "实时距离: \(traveledDistance)\n"
-            text += "直线距离: \(lineDistance)\n"
-            print(text)
-            label2.text = text
-            
+            locationFileURL = DocumentDirUrl.appendingPathComponent(locationFileName).appendingPathExtension("txt")
+            LocalFileManager.setFile(fileURL: locationFileURL, writeString: "location Service test\n")
         }
-        lastLocation = locations.last
-        
     }
+    func disableLocationServices(){
+        locationManager.stopUpdatingLocation()
+    }
+    //location
+    func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
+        switch status {
+        case .authorizedAlways:
+            print("location authorized")
+            enableLocationServices()
+        case .denied, .restricted:
+            print("not authorized")
+        default:
+            break
+        }
+    }
+    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+        let location = locations.last!
+        print("Date: ",DateUtil.stringifyAll(calendar: Date())," Coord: \(location.coordinate)")
+        LocalFileManager.appendfile(fileURL: locationFileURL, dataString: "Date: " + DateUtil.stringifyAll(calendar: Date()) + " Coord: \(location.coordinate)\n")
+        let threshold = self.calendar.component(.second, from: Date())
+        if(threshold > 30 && !locationUploadFlag){
+            locationUploadFlag = true
+
+            print("LocationManager ","location is uploaded")
+            
+        } else if(threshold != 0) {
+            locationUploadFlag = false
+        }
+    }
+
 }
 
 

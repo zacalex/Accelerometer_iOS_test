@@ -18,39 +18,67 @@
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="5" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="FQI-tn-Hxg">
-                                <rect key="frame" x="0.0" y="313" width="375" height="354"/>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="current svm" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="3" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="xkD-gF-7Ix">
+                                <rect key="frame" x="0.0" y="29" width="375" height="152"/>
                                 <constraints>
-                                    <constraint firstAttribute="height" constant="354" id="bIF-8a-HaR"/>
-                                </constraints>
-                                <fontDescription key="fontDescription" type="system" pointSize="22"/>
-                                <nil key="textColor"/>
-                                <nil key="highlightedColor"/>
-                            </label>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="3" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="xkD-gF-7Ix">
-                                <rect key="frame" x="0.0" y="29" width="375" height="195"/>
-                                <constraints>
-                                    <constraint firstAttribute="height" constant="195" id="2Lq-ff-Q3a"/>
+                                    <constraint firstAttribute="height" constant="152" id="2Lq-ff-Q3a"/>
                                 </constraints>
                                 <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                 <nil key="textColor"/>
                                 <nil key="highlightedColor"/>
                             </label>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Ttp-JM-S86">
+                                <rect key="frame" x="112" y="387" width="108" height="30"/>
+                                <state key="normal" title="Email result "/>
+                                <connections>
+                                    <action selector="sendEmail:" destination="BYZ-38-t0r" eventType="touchUpInside" id="RLH-8e-1N0"/>
+                                </connections>
+                            </button>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="r0g-7P-1s9">
+                                <rect key="frame" x="135" y="220" width="63" height="30"/>
+                                <state key="normal" title="Start acc"/>
+                                <connections>
+                                    <action selector="startAcc:" destination="BYZ-38-t0r" eventType="touchUpInside" id="Idl-hM-fgy"/>
+                                </connections>
+                            </button>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="hPO-v7-fLP">
+                                <rect key="frame" x="135" y="312" width="61" height="30"/>
+                                <state key="normal" title="Stop acc"/>
+                                <connections>
+                                    <action selector="Stopacc:" destination="BYZ-38-t0r" eventType="touchUpInside" id="qbx-gX-oQm"/>
+                                </connections>
+                            </button>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Nrr-W3-NyD">
+                                <rect key="frame" x="117" y="459" width="96" height="30"/>
+                                <state key="normal" title="reset local file"/>
+                                <connections>
+                                    <action selector="resetLocalfile:" destination="BYZ-38-t0r" eventType="touchUpInside" id="5mJ-Sw-N1E"/>
+                                </connections>
+                            </button>
                         </subviews>
                         <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
-                            <constraint firstItem="FQI-tn-Hxg" firstAttribute="bottom" secondItem="6Tk-OE-BBY" secondAttribute="bottom" id="02O-KV-9r1"/>
-                            <constraint firstItem="xkD-gF-7Ix" firstAttribute="leading" secondItem="FQI-tn-Hxg" secondAttribute="leading" id="Ys9-qc-x7U"/>
-                            <constraint firstItem="xkD-gF-7Ix" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leading" id="Z2l-Ic-r8Y"/>
-                            <constraint firstAttribute="trailing" secondItem="xkD-gF-7Ix" secondAttribute="trailing" id="kz3-Pc-sXu"/>
-                            <constraint firstItem="xkD-gF-7Ix" firstAttribute="trailing" secondItem="FQI-tn-Hxg" secondAttribute="trailing" id="rlU-qf-wiW"/>
-                            <constraint firstItem="xkD-gF-7Ix" firstAttribute="top" secondItem="6Tk-OE-BBY" secondAttribute="top" constant="9" id="tzC-Ds-gcs"/>
+                            <constraint firstItem="hPO-v7-fLP" firstAttribute="top" secondItem="r0g-7P-1s9" secondAttribute="bottom" constant="62" id="6no-al-sPk"/>
+                            <constraint firstItem="xkD-gF-7Ix" firstAttribute="top" secondItem="6Tk-OE-BBY" secondAttribute="top" constant="9" id="AfR-CY-TKl"/>
+                            <constraint firstItem="r0g-7P-1s9" firstAttribute="top" secondItem="xkD-gF-7Ix" secondAttribute="bottom" constant="39" id="L4b-GL-xYg"/>
+                            <constraint firstItem="r0g-7P-1s9" firstAttribute="leading" secondItem="hPO-v7-fLP" secondAttribute="leading" id="LS4-gO-KdM"/>
+                            <constraint firstItem="xkD-gF-7Ix" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leading" id="W2T-20-WIm"/>
+                            <constraint firstItem="r0g-7P-1s9" firstAttribute="centerX" secondItem="Ttp-JM-S86" secondAttribute="centerX" id="Yqg-Af-8kR"/>
+                            <constraint firstItem="Nrr-W3-NyD" firstAttribute="centerX" secondItem="hPO-v7-fLP" secondAttribute="centerX" id="ZLK-wn-cnp"/>
+                            <constraint firstItem="Nrr-W3-NyD" firstAttribute="top" secondItem="Ttp-JM-S86" secondAttribute="bottom" constant="42" id="aYA-Vy-sTD"/>
+                            <constraint firstAttribute="trailing" secondItem="xkD-gF-7Ix" secondAttribute="trailing" id="bZA-1e-odk"/>
+                            <constraint firstItem="Ttp-JM-S86" firstAttribute="top" secondItem="hPO-v7-fLP" secondAttribute="bottom" constant="45" id="h4S-ve-lCI"/>
+                            <constraint firstItem="Ttp-JM-S86" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="112" id="tOr-U8-wzK"/>
+                            <constraint firstItem="r0g-7P-1s9" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="135" id="zuY-Bz-ajG"/>
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
                     </view>
                     <connections>
+                        <outlet property="emailData" destination="Ttp-JM-S86" id="GrU-68-Axl"/>
                         <outlet property="label2" destination="xkD-gF-7Ix" id="KDC-TP-GcA"/>
-                        <outlet property="somex" destination="FQI-tn-Hxg" id="fm1-ma-3T4"/>
+                        <outlet property="resetfile" destination="Nrr-W3-NyD" id="cQG-wE-8Sz"/>
+                        <outlet property="startAcc" destination="r0g-7P-1s9" id="94I-Ie-fE7"/>
+                        <outlet property="stopAcc" destination="hPO-v7-fLP" id="8LZ-q3-Rmd"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
