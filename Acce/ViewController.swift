@@ -24,6 +24,7 @@ class ViewController: UIViewController, CLLocationManagerDelegate, MFMailCompose
     var basicUrl = "http://10.120.64.78:8888/TEST.php"
     let locationManager = CLLocationManager()
     var startLocation: CLLocation!
+    var countLine = 0
     //上一次的坐标
     var lastLocation: CLLocation!
     //总共移动的距离（实际距离）
@@ -54,6 +55,7 @@ class ViewController: UIViewController, CLLocationManagerDelegate, MFMailCompose
             let writeString = ""
             do{
                 try writeString.write(to:fileURL,atomically: true,encoding: String.Encoding.utf8)
+                countLine = 0
             } catch let error as NSError {
                 print("fail to write to url")
                 print(error)
@@ -71,6 +73,7 @@ class ViewController: UIViewController, CLLocationManagerDelegate, MFMailCompose
         let writeString = ""
         do{
             try writeString.write(to:fileURL,atomically: true,encoding: String.Encoding.utf8)
+            countLine = 0
         } catch let error as NSError {
             print("fail to write to url")
             print(error)
@@ -105,7 +108,8 @@ class ViewController: UIViewController, CLLocationManagerDelegate, MFMailCompose
     }
     
     @IBAction func startAcc(_ sender: Any) {
-        setAcce()
+//        setAcce()
+        setMotion()
         setupCoreLocation()
         stopAcc.isEnabled = true
         startAcc.isEnabled = false
@@ -183,6 +187,7 @@ class ViewController: UIViewController, CLLocationManagerDelegate, MFMailCompose
                 var svm = myData.acceleration.x * myData.acceleration.x +
                     myData.acceleration.y * myData.acceleration.y +
                     myData.acceleration.z * myData.acceleration.z
+
                 
                 svm = sqrt(svm) - 1
                 self.tempSum = self.tempSum + svm
@@ -190,13 +195,48 @@ class ViewController: UIViewController, CLLocationManagerDelegate, MFMailCompose
                 if(self.count > self.Hz){
                     print("acc", " appended \(svm) at " + DateUtil.stringifyAllAlt(calendar: Date()))
                     self.count = 0;
-                    
-                    self.label2.text = DateUtil.stringifyAllAlt(calendar: Date()) + " \(svm)"
+                    self.countLine += 1
+                    self.label2.text = DateUtil.stringifyAllAlt(calendar: Date()) + "\n \(svm) \n \(self.countLine)"
                     self.appendfile(dataString: DateUtil.stringifyAllAlt(calendar: Date()) + " \(svm)" + "\n")
                     svm = 0.0;
                     
                 }
             }
+        }
+        
+    }
+    
+    func setMotion(){
+        print("setMotion")
+        if motionManager.isDeviceMotionAvailable{
+            print("setMotion start")
+            motionManager.deviceMotionUpdateInterval = 1.0 / Hz
+            motionManager.startDeviceMotionUpdates(to: OperationQueue.current!){
+                (data, error) in
+                if let myData = data {
+                    //                print(myData)
+                    var svm = myData.userAcceleration.x * myData.userAcceleration.x +
+                        myData.userAcceleration.y * myData.userAcceleration.y +
+                        myData.userAcceleration.z * myData.userAcceleration.z
+                    
+                    
+                    
+                    
+                    svm = sqrt(svm) 
+                    self.tempSum = self.tempSum + svm
+                    self.count = self.count + 1.0
+                    if(self.count > self.Hz){
+                        print("acc", " appended \(svm) at " + DateUtil.stringifyAllAlt(calendar: Date()))
+                        self.count = 0;
+                        self.countLine += 1
+                        self.label2.text = DateUtil.stringifyAllAlt(calendar: Date()) + "\n \(svm) \n \(self.countLine)"
+                        self.appendfile(dataString: DateUtil.stringifyAllAlt(calendar: Date()) + " \(svm)" + "\n")
+                        svm = 0.0;
+                        
+                    }
+                }
+            }
+            
         }
     }
     
