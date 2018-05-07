@@ -119,6 +119,7 @@ class ViewController: UIViewController, CLLocationManagerDelegate, MFMailCompose
     @IBAction func Stopacc(_ sender: Any) {
         
         motionManager.stopAccelerometerUpdates()
+        motionManager.stopDeviceMotionUpdates()
         startAcc.isEnabled = true
         emailData.isEnabled = true
         resetfile.isEnabled = true
