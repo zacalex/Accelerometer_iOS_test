@@ -14,7 +14,7 @@ import MessageUI
 
 class ViewController: UIViewController, CLLocationManagerDelegate, MFMailComposeViewControllerDelegate {
     var motionManager = CMMotionManager()
-    let Hz = 50.0
+    var Hz = 50.0
     var sum = 0
     var fileName = "acce_data"
     let DocumentDirUrl = try! FileManager.default.url(for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: true)
@@ -33,14 +33,17 @@ class ViewController: UIViewController, CLLocationManagerDelegate, MFMailCompose
     var buffer = ""
     var uploaded = false
     var appended = false
+    var input = "50"
 
     @IBOutlet weak var label2: UILabel!
     
+    @IBOutlet weak var setRate: UILabel!
     @IBOutlet weak var startAcc: UIButton!
     @IBOutlet weak var stopAcc: UIButton!
     @IBOutlet weak var emailData: UIButton!
     @IBOutlet weak var resetfile: UIButton!
     
+    @IBOutlet weak var sampleRate: UITextField!
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -109,6 +112,15 @@ class ViewController: UIViewController, CLLocationManagerDelegate, MFMailCompose
     
     @IBAction func startAcc(_ sender: Any) {
 //        setAcce()
+        if (sampleRate.text != nil) {
+            input = sampleRate.text!
+            if(input != ""){
+                 Hz = Double(input)!
+            }
+           
+        }
+        
+        setRate.text = String(Hz)
         setMotion()
         setupCoreLocation()
         stopAcc.isEnabled = true
