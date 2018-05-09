@@ -11,8 +11,9 @@ import CoreMotion
 import Alamofire
 import CoreLocation
 import MessageUI
+import EasyToast
 
-class ViewController: UIViewController, CLLocationManagerDelegate, MFMailComposeViewControllerDelegate {
+class ViewController: UIViewController, CLLocationManagerDelegate, MFMailComposeViewControllerDelegate,UITextFieldDelegate {
     var motionManager = CMMotionManager()
     var Hz = 60.0
     var sum = 0
@@ -66,7 +67,18 @@ class ViewController: UIViewController, CLLocationManagerDelegate, MFMailCompose
             
         }
         stopAcc.isEnabled = false
+        self.sampleRate.delegate = self
+        let tap: UITapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
         
+        //Uncomment the line below if you want the tap not not interfere and cancel other interactions.
+        //tap.cancelsTouchesInView = false
+        
+        view.addGestureRecognizer(tap)
+        
+    }
+    @objc func dismissKeyboard() {
+        //Causes the view (or one of its embedded text fields) to resign the first responder status.
+        view.endEditing(true)
     }
 
     @IBAction func resetLocalfile(_ sender: Any) {
@@ -114,7 +126,12 @@ class ViewController: UIViewController, CLLocationManagerDelegate, MFMailCompose
         if (sampleRate.text != nil) {
             input = sampleRate.text!
             if(input != ""){
-                 Hz = Double(input)!
+                
+                if input.isNumeric {
+                    Hz = Double(input)!
+                } else {
+                    self.view.showToast("please enter a nubmer", position: .bottom, popTime: 3, dismissOnTap: false)
+                }
             }
            
         }
@@ -346,7 +363,15 @@ class ViewController: UIViewController, CLLocationManagerDelegate, MFMailCompose
             locationUploadFlag = false
         }
     }
+    
 
+}
+extension String {
+    var isNumeric: Bool {
+        guard self.characters.count > 0 else { return false }
+        let nums: Set<Character> = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]
+        return Set(self.characters).isSubset(of: nums)
+    }
 }
 
 
