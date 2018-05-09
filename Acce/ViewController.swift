@@ -14,7 +14,7 @@ import MessageUI
 
 class ViewController: UIViewController, CLLocationManagerDelegate, MFMailComposeViewControllerDelegate {
     var motionManager = CMMotionManager()
-    var Hz = 50.0
+    var Hz = 60.0
     var sum = 0
     var fileName = "acce_data"
     let DocumentDirUrl = try! FileManager.default.url(for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: true)
@@ -66,7 +66,6 @@ class ViewController: UIViewController, CLLocationManagerDelegate, MFMailCompose
             
         }
         stopAcc.isEnabled = false
-        
         
     }
 
@@ -120,13 +119,14 @@ class ViewController: UIViewController, CLLocationManagerDelegate, MFMailCompose
            
         }
         
-        setRate.text = String(Hz)
+        setRate.text = "Sample rate : \(Hz)Hz"
         setMotion()
         setupCoreLocation()
         stopAcc.isEnabled = true
         startAcc.isEnabled = false
         emailData.isEnabled = false
         resetfile.isEnabled = false
+        self.view.endEditing(true)
     }
     @IBAction func Stopacc(_ sender: Any) {
         
@@ -220,7 +220,7 @@ class ViewController: UIViewController, CLLocationManagerDelegate, MFMailCompose
     }
     
     func setMotion(){
-        print("setMotion")
+        print("setMotion", Hz)
         if motionManager.isDeviceMotionAvailable{
             print("setMotion start")
             motionManager.deviceMotionUpdateInterval = 1.0 / Hz
